@@ -6,7 +6,7 @@
 #Sample function that provides the location of the script
 function Get-ConfigurationData
 {
-	$configData = (Get-Content .\configuration.json) | ConvertFrom-Json
+	$configData = (Get-Content .\config.json) | ConvertFrom-Json
 	
 	return $configData
 }
@@ -17,13 +17,11 @@ function ConnectTo-SQLDatabase ()
 	param (
 		# Parameter help description
 		[Parameter(Mandatory = $true, Position = 1)]
-		$configuration,
-		[Parameter(Mandatory = $true, Position = 2)]
-		$databaseName
+		$configuration
 	)
 	
 	$dataSource = $configuration.databaseServer
-	$database = $databaseName
+	$database = $configuration.dbName
 	
 	#$authentication = "Provider=sqloledb";
 	
@@ -44,4 +42,20 @@ function ConnectTo-SQLDatabase ()
 	return $connection
 }
 
+function Import-AutoData ()
+{
+	param (
+		[Parameter(Mandatory = $true, Position = 1)]
+		$connection,
+		[Parameter(Mandatory = $true, Position = 2)]
+		$csvPath
+	)
+	
+	Get-Content $csvPath >> $PWD\temp.csv
+	$row = Import-Csv $PWD\temp.csv -Delimiter ";"
+	$row
+}
 
+#ConnectTo-SQLDatabase (Get-ConfigurationData)
+$autoCsvPath = (Get-ConfigurationData).srcDataLocation + "\" + (Get-ConfigurationData).srcAutoFileName
+Import-AutoData (ConnectTo-SQLDatabase (Get-ConfigurationData)) $autoCsvPath
