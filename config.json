@@ -4,5 +4,5 @@
     "databaseUserPassword": "RF2gkAk7QgEJReVjsW9O",
 	"dbName": "BP",
 	"srcDataLocation": "\\\\wassv006\\Install\\Projects\\BP\\Input data",
-	"srcAutoFileName": "Auto-source.csv"
+	"srcAutoFileName": "Auta-input.csv"
 }
