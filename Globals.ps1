@@ -4,31 +4,44 @@
 
 
 #Sample function that provides the location of the script
-function Get-ScriptDirectory
+function Get-ConfigurationData
 {
-<#
-	.SYNOPSIS
-		Get-ScriptDirectory returns the proper location of the script.
-
-	.OUTPUTS
-		System.String
+	$configData = (Get-Content .\configuration.json) | ConvertFrom-Json
 	
-	.NOTES
-		Returns the correct path within a packaged executable.
-#>
-	[OutputType([string])]
-	param ()
-	if ($null -ne $hostinvocation)
-	{
-		Split-Path $hostinvocation.MyCommand.path
-	}
-	else
-	{
-		Split-Path $script:MyInvocation.MyCommand.Path
-	}
+	return $configData
 }
 
-#Sample variable that provides the location of the script
-[string]$ScriptDirectory = Get-ScriptDirectory
+function ConnectTo-SQLDatabase ()
+{
+	
+	param (
+		# Parameter help description
+		[Parameter(Mandatory = $true, Position = 1)]
+		$configuration,
+		[Parameter(Mandatory = $true, Position = 2)]
+		$databaseName
+	)
+	
+	$dataSource = $configuration.databaseServer
+	$database = $databaseName
+	
+	#$authentication = "Provider=sqloledb";
+	
+	$authentication = "uid=" + $configuration.databaseUser + ";" +
+	"pwd=" + $configuration.databaseUserPassword + ";"
+	
+	$connectionString = "Provider=sqloledb; " +
+	"Data Source=$dataSource; " +
+	"Initial Catalog=$database; " +
+	"$authentication; "
+	## Connect to the data source and open it
+	
+	Write-Host $connectionString
+	
+	$connection = New-Object System.Data.OleDb.OleDbConnection $connectionString
+	$connection.Open()
+	
+	return $connection
+}
 
 
