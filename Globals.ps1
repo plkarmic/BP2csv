@@ -50,9 +50,8 @@ function Import-AutoData ()
 		[Parameter(Mandatory = $true, Position = 2)]
 		$csvPath
 	)
-	
-	Get-Content $csvPath >> $PWD\temp.csv
-	$row = Import-Csv $PWD\temp.csv -Delimiter ";"
+
+	$row = Import-Csv $csvPath -Delimiter ","
 	$row
 }
 
