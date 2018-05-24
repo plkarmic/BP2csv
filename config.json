@@ -1,8 +1,0 @@
-{
-    "databaseServer": "172.25.192.76,1434",
-    "databaseUser": "sa",
-    "databaseUserPassword": "RF2gkAk7QgEJReVjsW9O",
-	"dbName": "BP",
-	"srcDataLocation": "\\\\wassv006\\Install\\Projects\\BP\\Input data",
-	"srcAutoFileName": "Auta-input.csv"
-}
