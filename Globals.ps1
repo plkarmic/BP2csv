@@ -70,6 +70,7 @@ function Import-AutoData ()
 		$csvPath
 	)
 
+<<<<<<< HEAD
 	$rows = Import-Csv $csvPath -Delimiter ","
 	foreach	($row in $rows)
 	{
@@ -96,6 +97,10 @@ function Import-AutoData ()
             }
         }
     }
+=======
+	$row = Import-Csv $csvPath -Delimiter ","
+	$row
+>>>>>>> 6d954e14f2816400b455218bc5397750a97ebe1a
 }
 
 function Add-UsersIntoSQLDatabase()
