@@ -4,13 +4,37 @@
 
 
 #Sample function that provides the location of the script
-function Get-ConfigurationData
+function Get-ConfigurationData ()
 {
-	$configData = (Get-Content .\config.json) | ConvertFrom-Json
+    Param
+    (
+        [parameter(Mandatory = $true, Position = 1)]
+		[string]$inputFile
+    )
+    $configData = (Get-Content $inputFile) | ConvertFrom-Json
 	
 	return $configData
 }
 
+function Log-ToFile
+{
+	param
+	(
+		[parameter(Mandatory = $true, Position = 1)]
+		[string]$text,
+		[parameter(Mandatory = $false,Position=2)]
+		[string]$filename = $PWD.toString() + '\' + ((get-date -Format ddMMyyyy).toString()) + '.txt'
+	)
+	
+	if(!(Test-Path ($filename)))
+	{
+		New-Item $filename -Type file
+	}
+	
+	$row = (Get-Date -Format 'HH:mm:ss ddMMyyy') + ": " + $text
+	
+	$row | Out-File $filename -Append
+}
 function ConnectTo-SQLDatabase ()
 {
 	
@@ -46,16 +70,41 @@ function Import-AutoData ()
 {
 	param (
 		[Parameter(Mandatory = $true, Position = 1)]
-		$connection,
+		$SQLConnection,
 		[Parameter(Mandatory = $true, Position = 2)]
 		$csvPath
 	)
-	
-	Get-Content $csvPath >> $PWD\temp.csv
-	$row = Import-Csv $PWD\temp.csv -Delimiter ";"
-	$row
+
+	$rows = Import-Csv $csvPath -Delimiter ","
+	foreach	($row in $rows)
+	{
+        $sqlQuery = "INSERT INTO [dbo].[AUTO] ([NR_Zlecenia],[NR_Rejestracyjny],[TYP]) VALUES('{0}','{1}','{2}')" -f ($row.'Nr zlecenia').Trim(), ($row.'Numer rej').Trim(), ($row.TYP).Trim()
+        $sqlCmd = New-Object System.Data.OleDb.OleDbCommand
+        try
+        {
+            $sqlCmd.CommandText = $sqlQuery
+            $sqlCmd.Connection = $SQLConnection
+            if(($sqlCmd.ExecuteNonQuery()) -eq 1)
+            {
+                Log-ToFile "Object $($row.'Numer rej') added into database"
+            }
+        } 
+        catch
+        {
+            if ($_.Exception.ErrorRecord.Exception.Message -like "*Cannot insert duplicate key in object*")
+            {
+                Log-ToFile "Object $($row.'Numer rej') already exists"
+            }
+            else 
+            {
+                Log-ToFile "Object $($row.'Numer rej') not added, unknown error"    
+            }
+        }
+    }
 }
 
+
 #ConnectTo-SQLDatabase (Get-ConfigurationData)
-$autoCsvPath = (Get-ConfigurationData).srcDataLocation + "\" + (Get-ConfigurationData).srcAutoFileName
-Import-AutoData (ConnectTo-SQLDatabase (Get-ConfigurationData)) $autoCsvPath
+$configData = Get-ConfigurationData \\wassv006\INSTALL\Projects\BP\BP-sourceCode\BP2csv\config.json
+$autoCsvPath = $configData.srcDataLocation + "\" + $configData.srcAutoFileName
+Import-AutoData (ConnectTo-SQLDatabase $configData) $autoCsvPath
