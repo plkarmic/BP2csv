@@ -4,9 +4,14 @@
 
 
 #Sample function that provides the location of the script
-function Get-ConfigurationData
+function Get-ConfigurationData ()
 {
-	$configData = (Get-Content .\config.json) | ConvertFrom-Json
+    Param
+    (
+        [parameter(Mandatory = $true, Position = 1)]
+		[string]$inputFile
+    )
+    $configData = (Get-Content $inputFile) | ConvertFrom-Json
 	
 	return $configData
 }
@@ -100,5 +105,6 @@ function Import-AutoData ()
 
 
 #ConnectTo-SQLDatabase (Get-ConfigurationData)
-$autoCsvPath = (Get-ConfigurationData).srcDataLocation + "\" + (Get-ConfigurationData).srcAutoFileName
-Import-AutoData (ConnectTo-SQLDatabase (Get-ConfigurationData)) $autoCsvPath
+$configData = Get-ConfigurationData \\wassv006\INSTALL\Projects\BP\BP-sourceCode\BP2csv\config.json
+$autoCsvPath = $configData.srcDataLocation + "\" + $configData.srcAutoFileName
+Import-AutoData (ConnectTo-SQLDatabase $configData) $autoCsvPath
